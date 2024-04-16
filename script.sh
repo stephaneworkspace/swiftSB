@@ -16,7 +16,7 @@ CONTAINER_NAME="default"
 DIRECTORY_NAME="MAO_001"
 
 # Créer un fichier temporaire pour stocker la liste des fichiers
-swift list $CONTAINER_NAME --prefix $DIRECTORY_NAME > files_to_check.txt
+swift list $CONTAINER_NAME --prefix $DIRECTORY_NAME/ > files_to_check.txt
 
 grep '\.sha256$' files_to_check.txt | while read sha256_file; do
     echo "Traitement de $sha256_file..."
@@ -26,7 +26,11 @@ grep '\.sha256$' files_to_check.txt | while read sha256_file; do
     mkdir -p "$(dirname "$sha256_file_path")"
 
     # Télécharger le fichier .sha256
-    swift download $CONTAINER_NAME --output "$sha256_file_path" "$sha256_file"
+#    swift download $CONTAINER_NAME --output "$sha256_file_path" "$sha256_file"
+# Télécharger le fichier avec pv pour montrer la progression
+#   swift download $CONTAINER_NAME "$sha256_file" --output - | pv > "$sha256_file_path"
+   swift download $CONTAINER_NAME "$sha256_file" --output "$sha256_file_path"
+
 
     # Extraire le nom du fichier réel et son chemin à partir du nom du fichier .sha256
     actual_file_path="temp_downloads/${sha256_file%.sha256}"
