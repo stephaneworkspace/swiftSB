@@ -36,9 +36,11 @@ grep '\.sha256$' files_to_check.txt | while read sha256_file; do
 
     pushd "$(dirname "$actual_file_path")"
     if shasum -a 256 -c "$(basename "$sha256_file_path")"; then
-        echo -e "\e[32m$(basename "$sha256_file_path"): SUCCESS\e[0m"
+    #    echo -e "\e[32m$(basename "$sha256_file_path"): SUCCESS\e[0m"
+         echo "$(tput setaf 2)$(basename "$sha256_file_path"): SUCCESS$(tput sgr0)"
     else
-        echo -e "\e[31m$(basename "$sha256_file_path"): CHECKSUM MISMATCH\e[0m"
+    #    echo -e "\e[31m$(basename "$sha256_file_path"): CHECKSUM MISMATCH\e[0m"
+         echo "$(tput setaf 1)$(basename "$sha256_file_path"): CHECKSUM MISMATCH$(tput sgr0)"
     fi
     popd
 
