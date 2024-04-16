@@ -18,36 +18,38 @@ DIRECTORY_NAME="MAO_001"
 # Créer un fichier temporaire pour stocker la liste des fichiers
 swift list $CONTAINER_NAME --prefix $DIRECTORY_NAME > files_to_check.txt
 
-# Filtrer les fichiers .sha256 et les vérifier un par un
 grep '\.sha256$' files_to_check.txt | while read sha256_file; do
     echo "Traitement de $sha256_file..."
 
-    # Télécharger le fichier .sha256
-    swift download $CONTAINER_NAME "$sha256_file" --output "$sha256_file"
+    # Préparer les chemins locaux pour le téléchargement
+    sha256_file_path="temp_downloads/$sha256_file"
+    mkdir -p "$(dirname "$sha256_file_path")"
 
-    # Extrait le nom du fichier réel à partir du nom du fichier .sha256
-    actual_file="${sha256_file%.sha256}"
+    # Télécharger le fichier .sha256
+    swift download $CONTAINER_NAME --output "$sha256_file_path" "$sha256_file"
+
+    # Extraire le nom du fichier réel et son chemin à partir du nom du fichier .sha256
+    actual_file_path="temp_downloads/${sha256_file%.sha256}"
 
     # Télécharger le fichier correspondant
-    swift download $CONTAINER_NAME "$actual_file" --output "$actual_file"
+    swift download $CONTAINER_NAME --output "$actual_file_path" "${sha256_file%.sha256}"
 
     # Calculer le checksum SHA-256 du fichier téléchargé
-    calculated_checksum=$(sha256sum "$actual_file" | awk '{print $1}')
+    calculated_checksum=$(sha256sum "$actual_file_path" | awk '{print $1}')
 
     # Lire le checksum attendu à partir du fichier .sha256
-    expected_checksum=$(cat "$sha256_file")
+    expected_checksum=$(cat "$sha256_file_path")
 
     # Comparer les checksums
     if [[ "$calculated_checksum" == "$expected_checksum" ]]; then
-        echo "$actual_file: SUCCESS"
+        echo "$actual_file_path: SUCCESS"
     else
-        echo "$actual_file: CHECKSUM MISMATCH"
+        echo "$actual_file_path: CHECKSUM MISMATCH"
     fi
 
     # Supprimer les fichiers téléchargés pour économiser de l'espace disque
-    rm "$sha256_file"
-    rm "$actual_file"
-
+    rm "$sha256_file_path"
+    rm "$actual_file_path"
 done
 
 echo "Checksum verification completed."

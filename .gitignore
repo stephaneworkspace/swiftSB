@@ -1,0 +1,6 @@
+# Ignore le dossier temporaire de téléchargements
+temp_downloads/
+
+# Ignore le fichier de liste des fichiers
+files_to_check.txt
+
